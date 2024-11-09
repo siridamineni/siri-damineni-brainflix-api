@@ -2,9 +2,23 @@ import express from "express";
 import dotenv from "dotenv";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import multer from "multer";
 
 dotenv.config();
 const router = express.Router();
+
+//configure Multer for Image File Uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images"); // Save files in the 'public/images' directory
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 router.get("/", (req, res) => {
   const videos = fs.readFileSync("./data/videos.json", "utf8");
@@ -32,7 +46,7 @@ router.get("/:id", (req, res) => {
   res.json(findVideo);
 });
 
-router.post("/", (req, res) => {
+router.post("/", upload.single("image"), (req, res) => {
   const videos = fs.readFileSync("./data/videos.json", "utf8");
   const parsedVideos = JSON.parse(videos);
   const newVideo = {
@@ -40,8 +54,9 @@ router.post("/", (req, res) => {
     title: req.body.title,
     description: req.body.description,
     channel: "Siri Damineni",
-    image:
-      req?.body?.image || "http://localhost:5050/images/default-preview.jpg",
+    image: req?.file
+      ? `http://localhost:5050/images/${req.file.filename}`
+      : "http://localhost:5050/images/default-preview.jpg",
     views: "3,092,284",
     likes: "75,985",
     duration: "49:20",
