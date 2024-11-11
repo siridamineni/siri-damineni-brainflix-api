@@ -9,12 +9,12 @@ const router = express.Router();
 
 //configure Multer for Image File Uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/images"); // Save files in the 'public/images' directory
+  destination: (req, file, callback) => {
+    callback(null, "public/images");
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
+  filename: (req, file, callback) => {
+    const uniqueSuffix = uuidv4();
+    callback(null, uniqueSuffix + "-" + file.originalname);
   },
 });
 
